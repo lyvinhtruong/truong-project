@@ -28,10 +28,21 @@ else
     echo "Staring apache service..."
     httpd_status=$( docker exec -dti $container service httpd start )
     echo "$httpd_status"
-    
+
     echo "Starting MySQL..."
     mysql_status=$( docker exec -dti $container service mysqld start )
     echo "$mysql_status"
+
+    echo "Please enter GitHub repository URL :"
+    read repo
+
+    echo "Please enter branch name to checkout :"
+    read branch
+
+    if [ -n "$repo" ]
+    then
+        docker exec -it $container sh /root/do-github.sh $repo $branch
+    fi
 
     echo "Success! You have just created a new machine with detail information as below:"
     echo "    Container ID : $container"
