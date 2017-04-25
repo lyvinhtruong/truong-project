@@ -9,7 +9,7 @@ if [[ -z "$branch"  ]]; then
     echo "No branch name was inputted, 'master' branch will be checked out"
     git clone $repo .
 else
-    git clone -b $branch $repo .
+    git clone $repo --branch $branch --single-branch .
 fi
 
 res_clone=$?
