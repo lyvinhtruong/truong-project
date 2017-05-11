@@ -1,2 +1,0 @@
-service httpd start
-

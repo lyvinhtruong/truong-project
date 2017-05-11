@@ -1,6 +1,6 @@
-FROM evadocker/staging-centos:1.1
+FROM evadocker/staging-centos:basic
 MAINTAINER "Truong Ly <truonglv.eva@gmail.com>"
-LABEL Vendor="CentOS"
+LABEL Vendor="CentOS - Wordpress"
 
 RUN mkdir -p /root/.ssh/
 
@@ -16,8 +16,7 @@ RUN chmod 700 /root/.ssh/id_rsa && \
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
-RUN yum install -y wget && \
-    yum install -y tar && \
+RUN yum install -y acl && \
     yum groupinstall -y "Development Tools" && \
     yum install -y curl-devel expat-devel gettext-devel openssl-devel zlib-devel perl-devel perl-CPAN gcc perl-ExtUtils && \
     cd /usr/src && \
@@ -31,5 +30,5 @@ RUN yum install -y wget && \
     git config --global user.email "jenkinsbc2016@gmail.com" && \
     git config --list
 
-EXPOSE 80
+EXPOSE 80 443
 

@@ -16,15 +16,22 @@ do
 
 done
 
+disk_space=$(df -k /tmp | tail -1 | awk '{print $4}')
+
+if [ 1048576 -gt "$disk_space"  ]; then
+    echo "Not enough disk space for deploying new project."
+    exit
+fi
+
 if [ -z "$PORT" ]
 then
-    echo "Please enter port number (9091~9096) :"
+    echo "Please enter port number (9097~9102) :"
     read input_port
 else
     input_port=$PORT    
 fi
 
-if [ $input_port -gt 9096 ] || [ $input_port -lt 9091 ]
+if [ $input_port -gt 9102 ] || [ $input_port -lt 9097 ]
 then
     echo "You have entered invalid port"
 else
@@ -39,8 +46,10 @@ else
         exit 1
     fi
 
+    ssl_port=$(expr $input_port + 1000 )
+
     echo "Creating new container..."
-    container=$( docker run -dti -p $input_port:80 evadocker/staging-centos /bin/bash )
+    container=$( docker run -dti -v /root/shares:/shares -p $input_port:80 -p $ssl_port:443  evadocker/staging-centos /bin/bash )
     echo "$container"
 
     ip_address=$( docker inspect $container | grep -w "IPAddress" | awk '{ print $2 }' | head -n 1 | cut -d "," -f1 )
@@ -75,24 +84,21 @@ else
         docker exec -it $container sh /root/do-github.sh $repo $branch
     fi
 
-    docker exec -it $container cd /var/www/html/ && \
-    wget https://github.com/interconnectit/Search-Replace-DB/archive/master.zip -O Search-Replace-DB.zip  && \
-    unzip Search-Replace-DB.zip
-
-    echo "Setting up Wordpress site :"
+    echo "Setting up Wordpress site..."
 
     if [ -z "$DIRECTORY" ]
     then
-        echo "Please type folder name of project as listed below:"
+        echo "Please type folder name of project (Leave empty if you are working on single project):"
         read project_folder
         DIRECTORY=$project_folder
     fi
 
-    docker exec -it $container sh /root/setup-wordpress.sh DIRECTORY=$DIRECTORY PORT=$input_port
+    docker exec -it $container sh /root/setup-wordpress.sh DIRECTORY=$DIRECTORY PORT=$input_port SSL_PORT=$ssl_port
 
     echo "Success! You have just created a new machine with detail information as below:"
     echo "    Container ID : $container"
     echo "    IP Address   : $ip_address"
-    echo "    Public URL   : http://staging.evolable.asia:$input_port/"
+    echo "    Public URL   : http://server1.evolable.asia:$input_port/"
+    echo "                   https://server1.evolable.asia:$ssl_port/"
 fi
 
